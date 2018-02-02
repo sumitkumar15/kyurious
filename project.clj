@@ -12,7 +12,8 @@
                  [org.clojure/clojurescript "1.9.946"]
                  [org.clojure/core.async  "0.3.443"]
                  [secretary "1.2.3"]
-                 [reagent "0.8.0-alpha2"]]
+                 [reagent "0.8.0-alpha2"]
+                 [cljsjs/codemirror "5.31.0-0"]]
 
   :plugins [[lein-figwheel "0.5.14"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
@@ -31,7 +32,7 @@
                            ;; in the default browser once Figwheel has
                            ;; started and compiled your application.
                            ;; Comment this out once it no longer serves you.
-                           :open-urls ["http://localhost:3449/index.html"]}
+                           :open-urls ["http://localhost:3449/"]}
 
                 :compiler {:main proglearn-front.core
                            :asset-path "js/compiled/out"

@@ -1,36 +1,8 @@
 (ns proglearn-front.components
   (:require [reagent.core :as rgt]
-            [cljsjs.codemirror]))
+            [proglearn-front.editor :refer [editor]]))
 
 (def question-text (rgt/atom "Some dummy question text?"))
-
-;(def ta (rgt/atom (rgt/create-element "textarea")))
-;
-;(def atm (rgt/atom {}))
-;
-;;(def cm (js/CodeMirror.fromTextArea @ta {}))
-(def cm (atom nil))
-
-(reset! cm (js/CodeMirror.
-             (.createElement js/document "div")
-             (clj->js
-               {:lineNumbers       20
-                :viewportMargin    js/Infinity
-                :matchBrackets     true
-                :autofocus         true
-                :autoCloseBrackets true
-                :mode              "clojure"})))
-
-(defn update-comp [this]
-  (when @cm
-    (when-let [node (or (js/document.getElementById "teditor")
-                        (rgt/dom-node this))]
-      (.appendChild node (.getWrapperElement @cm)))))
-
-(def ed (rgt/atom (rgt/create-class
-                    {:reagent-render       (fn [] @cm [:div {:id "teditor"}])
-                     :component-did-update update-comp
-                     :component-did-mount  update-comp})))
 
 (defn question-comp
   []
@@ -43,8 +15,7 @@
   [:div {:class "editor-view"}
    [:div {:class "editor-options"}]
    [:div {:class "editor" :id "editormain"}
-    [:div {:id "teditor"}]
-    [@ed]]
+    [@editor]]
    [:div {:class "editor-controls"}]])
 
 (defn result-comp
@@ -60,18 +31,18 @@
    [result-comp]])
 
 (defn top-comp []
-  [:div {:id "top"}])
+  [:div {:id "top" :class "top-div"}])
 
 (defn content-comp []
-  [:div {:id "content"}
+  [:div {:id "content" :class "content-div"}
    [challenge-comp]])
 
 (defn footer-comp []
-  [:div {:id "footer"}])
+  [:div {:id "footer" :class "footer"}])
 
 (defn parent-comp
   []
-  [:div {:id "parent"}
+  [:div {:id "parent" :class "parent-top-level"}
    [top-comp]
    [content-comp]
    [footer-comp]])
