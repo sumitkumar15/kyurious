@@ -3,7 +3,8 @@
             [reagent.core :as rgt]
             [goog.events :as events]
             [goog.dom :as dom]
-            [goog.history.EventType :as EventType])
+            [goog.history.EventType :as EventType]
+            [proglearn-front.components :as pcomp])
   (:import goog.History))
 
 (enable-console-print!)
@@ -13,32 +14,18 @@ Bleh bleh bleh")
 
 ;; define your app data so that it doesn't get over-written on reload
 
-(defn some-component []
-  [:div
-   [:h3 "I am a component!"]
-   [:p.someclass
-    "I have " [:strong "bold"]
-    [:span {:style {:color "red"}} " and red"]
-    " text."]])
+(defonce app-state (rgt/atom {:text "Hello world!"}))
 
-(defonce app-state (atom {:text "Hello world!"}))
-
-(defn simple-component []
-  [:div
-   [:p "I am a component!"]
-   [:p.someclass
-    "I have " [:strong "bold"]
-    [:span {:style {:color "red"}} " and red "] "text."]])
-
-(defn render-simple []
-  (rgt/render [simple-component]
-            (.-body js/document)))
-
-(defroute "/compp" []
-          (println "on route comp")
-          (render-simple)
+(defroute "/" []
+          (rgt/render [pcomp/parent-comp]
+                      (js/document.getElementById "app"))
+          ;(js/CodeMirror.fromTextArea (.getElementById "teditor")
+          ;                            (clj->js {:linenumbers 20}))
           ;(rgt/render "Hello" (js/document.getElementById "app"))
           )
+
+(defroute "/c" []
+          (swap! pcomp/question-text #(str "Hello")))
 
 (let [h (History.)]
   (events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
