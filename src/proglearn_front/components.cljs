@@ -1,6 +1,9 @@
 (ns proglearn-front.components
   (:require [reagent.core :as rgt]
-            [proglearn-front.editor :refer [editor]]))
+            [proglearn-front.editor :refer [editor]]
+            [fulcrologic.semantic-ui.factories :as f]
+            [fulcrologic.semantic-ui.icons :as i]
+            [proglearn-front.semcomponents :as sc]))
 
 (def question-text (rgt/atom "Some dummy question text?"))
 
@@ -40,9 +43,18 @@
 (defn footer-comp []
   [:div {:id "footer" :class "footer"}])
 
+(defn alert
+  []
+  (js/alert "you clicked me"))
+
+(defn change-text
+  []
+  (swap! question-text (fn [] "Hello")))
+
 (defn parent-comp
   []
   [:div {:id "parent" :class "parent-top-level"}
    [top-comp]
-   [content-comp]
+   [sc/grid]
+   ;[content-comp]
    [footer-comp]])
