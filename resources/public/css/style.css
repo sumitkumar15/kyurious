@@ -1,11 +1,4 @@
 /* some style */
-
-.parent-top-level{
-    width: 60%;
-    margin: auto;
-}
-
 .top-div{
-    height: 50px;
-    background: #1caff6;
+    height:50px
 }
