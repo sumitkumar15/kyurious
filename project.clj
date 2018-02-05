@@ -13,7 +13,9 @@
                  [org.clojure/core.async  "0.3.443"]
                  [secretary "1.2.3"]
                  [reagent "0.8.0-alpha2"]
-                 [cljsjs/codemirror "5.31.0-0"]]
+                 [cljsjs/codemirror "5.31.0-0"]
+                 [fulcrologic/semantic-ui-react-wrappers "1.0.0"]
+                 [cljsjs/semantic-ui-react "0.77.2-0"]]
 
   :plugins [[lein-figwheel "0.5.14"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
