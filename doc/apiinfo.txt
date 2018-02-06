@@ -1,0 +1,35 @@
+1. The app will fetch challenges based on current level
+
+Challenge expected response
+
+{
+ :status "success/failed"
+ :resptype "fetch_next_challenge"
+ :level 1
+ :chID  "sljnas242"
+ :title "challenge name"
+ :desc  "any additional challenge description"
+ :data  {:type  "reading/mcq/code"
+         :content "content"}
+ }
+
+--> for reading type the content will be parsed as markdown format
+
+--> for mcq following will be content
+    {:type "mcq"
+     :content [{:question "question here"           //parsed as markdown
+                :options [opt1 opt2 opt3 opt4]}
+                {:question "question here"
+                                :options [opt1 opt2 opt3 opt4]}]
+     }
+
+--> for code challenge
+    {:type "code"
+     :content {:difficulty "easy/medium/hard"
+               :topic "tree/recursion"              //what it teaches
+               :question "" //markdown format
+               :language "javascript/clojure"
+               :editoropts {}
+               }
+     }
+
