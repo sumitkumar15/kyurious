@@ -17,24 +17,30 @@
 (defn handle-radio-change
   [this])
 
-(defn set-form-field
+(defn form-field-opts
   [^:Map data]
-  (fs/ui-form-field (clj->js {:control "input"
-                              :label (:label data)
-                              :value (:value data)
-                              :type "radio"
-                              :onChange handle-radio-change})))
-(defn form-field
-  [])
+  {:control  "input"
+   :label    (:label data)
+   :value    (:value data)
+   :type     "radio"
+   :onChange handle-radio-change})
+
+(defn prepare-opts
+  [^:Map data]
+  (let [name (:id data) options (:options data)]
+    (for [opt options]
+      (fs/ui-form-field
+        (clj->js (merge {:name name}
+                        (form-field-opts opt)))))))
 
 (defn generate-radio
   [^:Map data]
   (fs/ui-form-group
     (clj->js {:children [(label (:question data))
                          (fs/ui-divider #js {:hidden true})
-                         (map set-form-field (:options data))]})))
+                         (prepare-opts data)]})))
 
-(defn create-radio-group
+(defn create-mcq-class
   [^:Map data]
   (rgt/create-class
     {:reagent-render generate-radio}))
@@ -42,4 +48,4 @@
 (defn mcq
   [content]
   (when (not-empty content)
-    (rgt/as-element [create-radio-group content])))
+    (rgt/as-element [create-mcq-class content])))
