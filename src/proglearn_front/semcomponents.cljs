@@ -2,31 +2,19 @@
   (:require [fulcrologic.semantic-ui.factories :as fs]
             [fulcrologic.semantic-ui.icons :as ic]
             [reagent.core :as rgt]
-            [proglearn-front.editor :refer [editor]]))
+            [proglearn-front.editor :refer [editor]]
+            [proglearn-front.cmarkdown :as mark]
+            [proglearn-front.uicomp :as ui]))
 
-(def question-info (rgt/atom {:title "Apple & Oranges"
-                              :qtext "Sam's house has an apple tree and an orange tree
-                      that yield an abundance of fruit. In the diagram
-                       below, the red region denotes his house, where
-                       is the start point, and is the endpoint. The apple
-                       tree is to the left of his house, and the orange tree
-                       is to its right. You can assume the trees are located on a
-                       single point, where the apple tree is at point , and the
-                       orange tree is at point ."}))
 
 (def runbutton (fs/ui-button #js {:content       "Run"
                                   :icon          ic/play-icon
                                   :labelPosition "middle"
                                   :color         "green"}))
 
-(defn parse-q-segment
-  [arg]
-  (fs/ui-segment #js {:raised  true
-                      :content arg
-                      :children [(fs/ui-header
-                                   #js {:as "h2"
-                                        :content (:title arg)})
-                                 (rgt/as-element [:p (:qtext arg)])]}))
+(defn button
+  ([props]
+   (fs/ui-button (clj->js props))))
 
 (defn somefunc
   []
@@ -47,21 +35,22 @@
                                    (create-menu-item "Discussions" {} somefunc)
                                    (create-menu-item "Editorial" {} somefunc)]})))
 
-(defn create-row
-  [^:Reactcomp arg]
-  (fs/ui-grid-row #js {:children (if (list? arg) arg [arg])}))
+(defn row
+  ([^:Reactcomp arg]
+   (fs/ui-grid-row #js {:children (if (list? arg) arg [arg])}))
+  ([^:Reactcomp arg props]
+   (fs/ui-grid-row (clj->js (merge
+                              {:children (if (list? arg) arg [arg])}
+                              props)))))
 
-(defn create-col
+(defn col
   [^:Map props]
   (fs/ui-grid-column (clj->js props)))
 
 (defn codemirror
   []
-  (create-col {:width    10
-               :children [(create-row editor) (fs/ui-divider) (create-row runbutton)]}))
-
-(def midrow (create-row (list (codemirror)
-                              (create-col {:width 6}))))
+  (col {:width    10
+        :children [(row editor) (fs/ui-divider) (row runbutton)]}))
 
 (declare change-mango)
 (defn create-list-item
@@ -71,18 +60,12 @@
                                     :onClick change-mango}
                                    props))))
 
-(def at (rgt/atom (create-list-item nil {:onClick change-mango} "Banana")))
 
-
-(defn change-mango
-  []
-  (swap! at (fn [] (create-list-item {} nil "Mango"))))
-
-(defn list-comp
-  []
-  (fs/ui-list (clj->js {:selection     true
-                        :verticalAlign "middle"
-                        :children      [(create-list-item nil {} "Orange") @at]})))
+;(defn list-comp
+;  []
+;  (fs/ui-list (clj->js {:selection     true
+;                        :verticalAlign "middle"
+;                        :children      [(create-list-item nil {} "Orange") @at]})))
 (defn left-col
   ([]
    (fs/ui-grid-column (clj->js {:width 10})))
@@ -96,15 +79,47 @@
    (fs/ui-grid-column (clj->js {:width    6
                                 :children (if (list? args) args [args])}))))
 
+(defmulti challenge-comp (fn [x] (:type x)))
+
+(defmethod challenge-comp "code"
+  [params])
+
+(defmethod challenge-comp "mcq"
+  [{level :level title :title
+    desc  :desc content :content
+    id    :challengeId}]
+  (let [titlerow (row (fs/ui-header #js {:as        "h2"
+                                         :content   title
+                                         :textAlign "center"}))
+        headrow (row (list (col {:width 4 :children [level]})
+                           (col {:width 4 :children [id]})))
+        descrow (row (col {:children [desc]}))
+        maincontent (ui/parse-mcq-exercise content)]
+    (col {:children [(fs/ui-segment
+                       (clj->js {:raised   true
+                                 :children [titlerow
+                                            descrow
+                                            (fs/ui-divider)
+                                            maincontent]}))
+                     (fs/ui-grid
+                       #js {:children (row
+                                        (list
+                                          (col {:width 13})
+                                          (col {:width    3
+                                                :children [(button {:content "Submit"
+                                                                    :color   "green"
+                                                                    :loading true
+                                                                    :onClick (fn [x y] (println x))})]}))
+                                        {:columns 2})})]})))
+
+(defmethod challenge-comp "read"
+  [params])
+
 (defn grid
-  []
+  [params]
   (fs/ui-grid #js {:container true
                    :centered  true
                    :padded    "vertically"
                    :divided   true
-                   :children  [(left-col (list (create-menu)
-                                               (create-row
-                                                 (parse-q-segment @question-info))
-                                               (fs/ui-divider)
-                                               (codemirror)))
-                               (right-col (list (list-comp)))]}))
+                   :children  [(left-col (list (challenge-comp params)))]}))
+
