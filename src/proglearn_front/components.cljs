@@ -52,9 +52,10 @@
   (swap! question-text (fn [] "Hello")))
 
 (defn parent-comp
-  []
+  [data]
   [:div {:id "parent" :class "parent-top-level"}
    [top-comp]
-   [sc/grid]
+   [sc/grid data]
    ;[content-comp]
    [footer-comp]])
+

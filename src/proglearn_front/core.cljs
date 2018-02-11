@@ -1,10 +1,14 @@
 (ns proglearn-front.core
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [secretary.core :as secretary :refer-macros [defroute]]
             [reagent.core :as rgt]
             [goog.events :as events]
             [goog.dom :as dom]
             [goog.history.EventType :as EventType]
-            [proglearn-front.components :as pcomp])
+            [proglearn-front.components :as pcomp]
+            [proglearn-front.apicalls :as apis]
+            [cljs.core.async :refer [<!]]
+            [proglearn-front.semcomponents :as s])
   (:import goog.History))
 
 (enable-console-print!)
@@ -18,14 +22,15 @@ Bleh bleh bleh")
 
 (defroute "/" []
           (rgt/render [pcomp/parent-comp]
-                      (js/document.getElementById "app"))
-          ;(js/CodeMirror.fromTextArea (.getElementById "teditor")
-          ;                            (clj->js {:linenumbers 20}))
-          ;(rgt/render "Hello" (js/document.getElementById "app"))
-          )
+                      (js/document.getElementById "app")))
 
-(defroute "/c" []
-          (swap! pcomp/question-text #(str "Hello")))
+(defroute "/challenge" []
+          (go
+            (let [response (<! (apis/testrequest))
+                  r (:data response)]
+              (swap! s/chstate merge {:challenge r})
+              (rgt/render [pcomp/parent-comp @s/chstate]
+                          (js/document.getElementById "app")))))
 
 (let [h (History.)]
   (events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
