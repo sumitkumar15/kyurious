@@ -1,15 +1,17 @@
 (ns proglearn-front.semcomponents
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [fulcrologic.semantic-ui.factories :as fs]
             [fulcrologic.semantic-ui.icons :as ic]
             [reagent.core :as rgt]
             [proglearn-front.editor :refer [editor]]
             [proglearn-front.cmarkdown :as mark]
-            [proglearn-front.uicomp :as ui]))
+            [proglearn-front.uicomp :as ui]
+            [proglearn-front.apicalls :as apis]
+            [cljs.core.async :refer [<!]]))
 
 
 (def runbutton (fs/ui-button #js {:content       "Run"
                                   :icon          ic/play-icon
-                                  :labelPosition "middle"
                                   :color         "green"}))
 
 (defn button
@@ -84,13 +86,35 @@
 (defmethod challenge-comp "code"
   [params])
 
+;(declare submit-click)
+(def chstate (rgt/atom {}))
+
+(defn submit-click
+  [event opts]
+  ;(let [k (merge (:submitbutton @chstate) {:loading true})
+  ;      p (merge @chstate k)]
+    (go
+      (let [response (<! (apis/check-ans @ui/mcq-state))]
+        (println response)))
+    ;(swap! chstate (fn [] p)))
+
+  ;(swap! chstate (fn [] (merge @chstate (merge (:submitbutton @chstate) {:loading true}))))
+  )
+
+(swap! chstate (fn [] {:challenge    {}
+                       :submitbutton {:content "Submit"
+                                      :color   "green"
+                                      :loading false
+                                      :onClick submit-click}}))
+
 (defmethod challenge-comp "mcq"
-  [{level :level title :title
-    desc  :desc content :content
-    id    :challengeId}]
-  (let [titlerow (row (fs/ui-header #js {:as        "h2"
-                                         :content   title
-                                         :textAlign "center"}))
+  []
+  (let [{level :level title :title
+         desc  :desc content :content
+         id    :challengeId} (:challenge @chstate)
+        titlerow (row (fs/ui-header (clj->js {:as        "h2"
+                                              :content   title
+                                              :textAlign "center"})))
         headrow (row (list (col {:width 4 :children [level]})
                            (col {:width 4 :children [id]})))
         descrow (row (col {:children [desc]}))
@@ -106,20 +130,18 @@
                                         (list
                                           (col {:width 13})
                                           (col {:width    3
-                                                :children [(button {:content "Submit"
-                                                                    :color   "green"
-                                                                    :loading true
-                                                                    :onClick (fn [x y] (println x))})]}))
+                                                :children [(button (:submitbutton @chstate))]}))
                                         {:columns 2})})]})))
 
 (defmethod challenge-comp "read"
   [params])
 
 (defn grid
+  "The parameter only tells which function to render"
   [params]
   (fs/ui-grid #js {:container true
                    :centered  true
                    :padded    "vertically"
                    :divided   true
-                   :children  [(left-col (list (challenge-comp params)))]}))
+                   :children  [(left-col (list (challenge-comp (:challenge params))))]}))
 
