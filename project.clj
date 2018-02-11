@@ -15,7 +15,8 @@
                  [reagent "0.8.0-alpha2"]
                  [cljsjs/codemirror "5.31.0-0"]
                  [fulcrologic/semantic-ui-react-wrappers "1.0.0"]
-                 [cljsjs/semantic-ui-react "0.77.2-0"]]
+                 [cljsjs/semantic-ui-react "0.77.2-0"]
+                 [cljs-http "0.1.44"]]
 
   :plugins [[lein-figwheel "0.5.14"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
