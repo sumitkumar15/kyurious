@@ -3,19 +3,20 @@
             [fulcrologic.semantic-ui.factories :as fs]
             [fulcrologic.semantic-ui.icons :as ic]))
 
-(def testdata {:question "How many legs on a snake How many legs on a snake How many legs on a snakeHow many legs on a snakeHow many legs on a snakeHow many legs on a snake?"
-               :id "blabla"
-               :options [{:label "1" :value "A"}
-                         {:label "2" :value "B"}
-                         {:label "3" :value "C"}
-                         {:label "4" :value "D"}]})
+;; variable that holds the mcq quiz state
+(def mcq-state (atom {}))
+
 (defn label
   [content]
   (fs/ui-label (clj->js {:content content
                          :size "big"})))
 
 (defn handle-radio-change
-  [this])
+  [a]
+  (swap! mcq-state (fn [] (merge @mcq-state
+                                 {(.-name (.-target a))
+                                  (.-value (.-target a))})))
+  (println @mcq-state))
 
 (defn form-field-opts
   [^:Map data]
@@ -23,7 +24,7 @@
    :label    (:label data)
    :value    (:value data)
    :type     "radio"
-   :onChange handle-radio-change})
+   :onClick handle-radio-change})
 
 (defn prepare-opts
   [^:Map data]
@@ -49,3 +50,8 @@
   [content]
   (when (not-empty content)
     (rgt/as-element [create-mcq-class content])))
+
+(defn parse-mcq-exercise
+  [content]
+  (-> (map (fn [x] [x (fs/ui-divider #js {:hidden true})]) (map mcq content))
+      flatten))
