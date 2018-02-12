@@ -12,16 +12,53 @@ Challenge expected response
  :data  {:type  "reading/mcq/code"
          :content "content"}
  }
+ Example::
+ {:status "success"
+    :reqtype "fetch_challenge"
+    :data  {:level 1
+            :title "Javascript fundamentals"
+            :desc  "Select the correct responses"
+            :challengeId "unique"
+            :type "mcq" ; remove this
+            :content [{:question "How to declare a variable ?"
+                                 :id 1
+                                 :type "mcq/code/read"
+                                 :options [{:label "car"
+                                            :value "A"}
+                                           {:label "var"
+                                            :value "B"}
+                                           {:label "star"
+                                            :value "C"}
+                                           {:label "War"
+                                            :value "D"}]}
+                      {:question "Which is a Loop ?"
+                       :id 2
+                       :type "mcq/code/read"
+                       :options [{:label "smile"
+                                  :value "A"}
+                                 {:label "phenyl"
+                                  :value "B"}
+                                 {:label "while"
+                                  :value "C"}
+                                 {:label "trial"
+                                  :value "D"}]}]
+            }
+    }
 
 --> for reading type the content will be parsed as markdown format
 
 --> for mcq following will be content
-    {:type "mcq"
+    {:challengeId "unique"
+     :type "mcq"
      :content [{:question "question here"           //parsed as markdown
+                :id "qid"           //make unique for  set of q's
                 :options [opt1 opt2 opt3 opt4]}
                 {:question "question here"
                                 :options [opt1 opt2 opt3 opt4]}]
      }
+     every option:
+     {:label "string"
+      :value val}
 
 --> for code challenge
     {:type "code"
