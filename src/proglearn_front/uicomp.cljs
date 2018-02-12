@@ -15,8 +15,7 @@
   [a]
   (swap! mcq-state (fn [] (merge @mcq-state
                                  {(.-name (.-target a))
-                                  (.-value (.-target a))})))
-  (println @mcq-state))
+                                  (.-value (.-target a))}))))
 
 (defn form-field-opts
   [^:Map data]
@@ -55,3 +54,17 @@
   [content]
   (-> (map (fn [x] [x (fs/ui-divider #js {:hidden true})]) (map mcq content))
       flatten))
+
+(defmulti render-ui
+          "Takes a task map & renders the ui component based on task type"
+          (fn [x] (:type x)))
+
+(defmethod render-ui "mcq"
+  [content]
+  (mcq content))
+
+(defmethod render-ui "code"
+  [content])
+
+(defmethod render-ui "read"
+  [content])
