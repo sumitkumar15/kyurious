@@ -7,20 +7,13 @@
             [proglearn-front.cmarkdown :as mark]
             [proglearn-front.uicomp :as ui]
             [proglearn-front.apicalls :as apis]
-            [cljs.core.async :refer [<!]]))
-
-
-(def runbutton (fs/ui-button #js {:content       "Run"
-                                  :icon          ic/play-icon
-                                  :color         "green"}))
+            [cljs.core.async :refer [<!]]
+            [proglearn-front.flow :as flow]
+            [proglearn-front.state :as st :refer [app-state]]))
 
 (defn button
   ([props]
    (fs/ui-button (clj->js props))))
-
-(defn somefunc
-  []
-  (js/alert "alerted"))
 
 (defn create-menu-item
   [content props callback]
@@ -28,14 +21,14 @@
                                       :onClick callback}))]
     (fs/ui-menu-item prop-m)))
 
-(defn create-menu
-  []
-  (fs/ui-menu (clj->js {:widths   4
-                        :pointing true
-                        :children [(create-menu-item "Problem" {} somefunc)
-                                   (create-menu-item "Submissions" {} somefunc)
-                                   (create-menu-item "Discussions" {} somefunc)
-                                   (create-menu-item "Editorial" {} somefunc)]})))
+;(defn create-menu
+;  []
+;  (fs/ui-menu (clj->js {:widths   4
+;                        :pointing true
+;                        :children [(create-menu-item "Problem" {} somefunc)
+;                                   (create-menu-item "Submissions" {} somefunc)
+;                                   (create-menu-item "Discussions" {} somefunc)
+;                                   (create-menu-item "Editorial" {} somefunc)]})))
 
 (defn row
   ([^:Reactcomp arg]
@@ -49,25 +42,16 @@
   [^:Map props]
   (fs/ui-grid-column (clj->js props)))
 
-(defn codemirror
-  []
-  (col {:width    10
-        :children [(row editor) (fs/ui-divider) (row runbutton)]}))
+;(defn codemirror
+;  []
+;  (col {:width    10
+;        :children [(row editor) (fs/ui-divider) (row runbutton)]}))
 
-(declare change-mango)
 (defn create-list-item
   [qinfo props c]
   (fs/ui-list-item (clj->js (merge {:icon    ic/pencil-icon
-                                    :content c
-                                    :onClick change-mango}
+                                    :content c}
                                    props))))
-
-
-;(defn list-comp
-;  []
-;  (fs/ui-list (clj->js {:selection     true
-;                        :verticalAlign "middle"
-;                        :children      [(create-list-item nil {} "Orange") @at]})))
 (defn left-col
   ([]
    (fs/ui-grid-column (clj->js {:width 10})))
@@ -91,15 +75,7 @@
 
 (defn submit-click
   [event opts]
-  ;(let [k (merge (:submitbutton @chstate) {:loading true})
-  ;      p (merge @chstate k)]
-    (go
-      (let [response (<! (apis/check-ans @ui/mcq-state))]
-        (println response)))
-    ;(swap! chstate (fn [] p)))
-
-  ;(swap! chstate (fn [] (merge @chstate (merge (:submitbutton @chstate) {:loading true}))))
-  )
+  (flow/load-next-task))
 
 (swap! chstate (fn [] {:challenge    {}
                        :submitbutton {:content "Submit"
@@ -107,26 +83,54 @@
                                       :loading false
                                       :onClick submit-click}}))
 
+;(defmethod challenge-comp "mcq"
+;  []
+;  (let [{level :level title :title
+;         desc  :desc content :content
+;         id    :challengeId} (:challenge @chstate)
+;        titlerow (row (fs/ui-header (clj->js {:as        "h2"
+;                                              :content   title
+;                                              :textAlign "center"})))
+;        headrow (row (list (col {:width 4 :children [level]})
+;                           (col {:width 4 :children [id]})))
+;        descrow (row (col {:children [desc]}))
+;        maincontent (ui/parse-mcq-exercise content)]
+;    (col {:children [(fs/ui-segment
+;                       (clj->js {:raised   true
+;                                 :children [titlerow
+;                                            descrow
+;                                            (fs/ui-divider)
+;                                            maincontent]}))
+;                     (fs/ui-grid
+;                       #js {:children (row
+;                                        (list
+;                                          (col {:width 13})
+;                                          (col {:width    3
+;                                                :children [(button (:submitbutton @chstate))]}))
+;                                        {:columns 2})})]})))
 (defmethod challenge-comp "mcq"
   []
   (let [{level :level title :title
          desc  :desc content :content
-         id    :challengeId} (:challenge @chstate)
+         id    :challengeId} (:lesson @app-state)
         titlerow (row (fs/ui-header (clj->js {:as        "h2"
                                               :content   title
                                               :textAlign "center"})))
         headrow (row (list (col {:width 4 :children [level]})
                            (col {:width 4 :children [id]})))
         descrow (row (col {:children [desc]}))
-        maincontent (ui/parse-mcq-exercise content)]
+        maincontent (ui/mcq @flow/current-task)]
     (col {:children [(fs/ui-segment
                        (clj->js {:raised   true
                                  :children [titlerow
                                             descrow
                                             (fs/ui-divider)
-                                            maincontent]}))
+                                            maincontent
+                                            (row (list (col {:width 13}) (col {:width 13
+                                                                               :children [(button (:submitbutton @chstate))]})))]}))
                      (fs/ui-grid
-                       #js {:children (row
+                       #js {:columns 10
+                            :children (row
                                         (list
                                           (col {:width 13})
                                           (col {:width    3
@@ -138,10 +142,9 @@
 
 (defn grid
   "The parameter only tells which function to render"
-  [params]
+  []
   (fs/ui-grid #js {:container true
                    :centered  true
                    :padded    "vertically"
                    :divided   true
-                   :children  [(left-col (list (challenge-comp (:challenge params))))]}))
-
+                   :children  [(left-col (list (challenge-comp (:lesson @app-state))))]}))
