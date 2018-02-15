@@ -38,7 +38,7 @@
 (defn parent-comp
   []
   [:div {:id "parent" :class "parent-top-level"}
-   [top-comp]
+   [sc/nav-component]
    [sc/grid]
    ;[content-comp]
    [footer-comp]])
