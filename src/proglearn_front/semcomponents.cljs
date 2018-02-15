@@ -69,33 +69,6 @@
    (fs/ui-grid-column (clj->js {:width    6
                                 :children (if (list? args) args [args])}))))
 
-(def checkbutton (rgt/atom {}))
-
-(defn submit-click
-  [event opts]
-  ;(if (flow/match-sol (:sol ui/sol-state))
-  ;  (swap! ui/sol-state merge {:sol true})
-  ;  (swap! ui/sol-state merge {:sol false}))
-  ;(swap! ui/att (fn [] {:name  ic/remove-circle-outline-icon
-  ;                      :color "red"}))
-  (ui/change)
-    ;(println @ui/att)
-  ;(flow/load-next-task)
-  )
-
-(def button-type {:check {:content "Check"
-                          :color   "green"
-                          :loading false
-                          :floated "right"
-                          :onClick submit-click}
-                  :submit {:content "Submit"
-                           :color   "green"
-                           :loading false
-                           :floated "right"
-                           :onClick submit-click}})
-
-(swap! checkbutton (fn [] (:check button-type)))
-
 (defn challenge-comp
   []
   (let [{level :level title :title
@@ -110,27 +83,21 @@
         maincontent (ui/render-ui @flow/current-task)
         tickicon (ui/tickmark @ui/att)]
     (col {:children [(fs/ui-segment
-                       (clj->js {:raised   true
+                       (clj->js {:basic    true
                                  :children [titlerow
                                             descrow
                                             (fs/ui-divider)
                                             maincontent
                                             tickicon]}))
-                     (fs/ui-grid
-                       #js {:columns  10
-                            :children (row
-                                        (list
-                                          (col {:width 13})
-                                          (col {:width    3
-                                                :children [(button @checkbutton)]}))
-                                        {:columns 2})})]})))
+                     (fs/ui-divider #js {:section true
+                                         :hidden  true})]})))
 
 (defn grid
   "The parameter only tells which function to render"
   []
   (fs/ui-grid #js {:container true
                    :centered  true
-                   :padded    "vertically"
+                   ;:padded    "vertically"
                    :divided   true
                    :children  [(left-col (list (challenge-comp)))]}))
 
@@ -139,12 +106,12 @@
   (let [mopts {:secondary true} props {}]
     (create-menu
       mopts
-      (button {:content "Home"
+      (button {:content  "Home"
                :circular true
-               :color "teal"})
-      (button {:content "Discussion"
+               :color    "teal"})
+      (button {:content  "Discussion"
                :circular true
-               :color "teal"}))))
+               :color    "teal"}))))
 
 (defn profile-menu
   [name]
@@ -167,7 +134,7 @@
   []
   (fs/ui-grid (clj->js
                 {:centered true
-                 :padded   "vertiacally"
+                 :padded   "vertically"
                  :children [(row
                               (list (col {:width         4
                                           :textAlign     "center"
@@ -179,4 +146,31 @@
                                     (col {:width    4
                                           :children (profile-menu "Sumit")})
                                     (col {:width 4}))
+                              {:color "teal"})]})))
+
+(defn submit-click
+  [event opts]
+  (ui/indicate-incorrect))
+
+(defn b-check-component
+  "The Navigation bar"
+  []
+  (fs/ui-grid (clj->js
+                {:centered true
+                 :padded   "vertically"
+                 :children [(row
+                              (list
+                                (col {:width    5
+                                      :children (button {:content  "Skip"
+                                                         :circular true
+                                                         :color    "blue"
+                                                         :size     "huge"
+                                                         :basic    true})})
+                                (col {:width    5
+                                      :children (button {:content  "Check"
+                                                         :circular true
+                                                         :color    "teal"
+                                                         :size     "huge"
+                                                         :floated  "right"}
+                                                        submit-click)}))
                               {:color "teal"})]})))
