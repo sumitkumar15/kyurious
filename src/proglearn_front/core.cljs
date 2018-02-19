@@ -8,32 +8,67 @@
             [proglearn-front.components :as pc]
             [proglearn-front.apicalls :as apis]
             [cljs.core.async :refer [<!]]
-            [proglearn-front.semcomponents :as s]
             [proglearn-front.flow :as flow]
             [proglearn-front.state :as st :refer [app-state]])
-  (:import goog.History))
+  (:import goog.history.Html5History))
 
 (enable-console-print!)
 
-(defroute "/" []
-          (rgt/render [pc/parent-comp]
-                      (js/document.getElementById "app")))
+(defn hook-browser-navigation! []
+  (doto (Html5History.)
+    (events/listen
+      EventType/NAVIGATE
+      (fn [event]
+        (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
 
-(defroute "/challenge" []
-          (go
-            (let [response (<! (apis/testrequest))
-                  r (:data response)]
-              (st/add-to-state [:lesson] r)
-              (flow/load-next-task)
-              (rgt/render [pc/parent-comp]
-                          (js/document.getElementById "app")))))
+;(defn hook-browser-navigation! []
+;  (let [history (doto (Html5History.)
+;                  (events/listen
+;                    EventType/NAVIGATE
+;                    (fn [event]
+;                      (secretary/dispatch! (.-token event))))
+;                  (.setUseFragment false)
+;                  (.setPathPrefix "")
+;                  (.setEnabled true))]
+;
+;    (events/listen js/document "click"
+;                   (fn [e]
+;                     (. e preventDefault)
+;                     (let [path (.getPath (.parse Uri (.-href (.-target e))))
+;                           title (.-title (.-target e))]
+;                       (when path
+;                         (.history (setToken path title))))))))
 
-(let [h (History.)]
-  (events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
-  (doto h (.setEnabled true)))
+(defn app-routes
+  []
+  ;(secretary/set-config! :prefix "#")
+  (defroute "/" []
+            (swap! app-state assoc :page :home))
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+  (defroute "/challenge" []
+            (go
+              (let [response (<! (apis/testrequest))
+                    r (:data response)]
+                (st/add-to-state [:lesson] r)
+                (st/add-to-state [:progress] {:percent 20})
+                ;(flow/reset-data)
+                (flow/load-next-task)
+                (swap! app-state assoc :page :challenge)))
+            )
+            (hook-browser-navigation!))
+
+(defmulti current-page #(@app-state :page))
+
+(defmethod current-page :challenge []
+  [pc/parent-comp])
+
+(defmethod current-page :home []
+  [:div "placeholder"])
+
+(defn ^:export main []
+  (app-routes)
+  (rgt/render [current-page]
+              (js/document.getElementById "app")))
+
+(main)
