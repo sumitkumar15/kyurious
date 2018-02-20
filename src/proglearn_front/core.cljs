@@ -60,8 +60,10 @@
               (st/add-to-state [:play] r)))
 
   (defroute "/skill/:lang/:lesson/:qid" [lang lesson qid]
-            (let [p (get-in @app-state [:play :test])]
-              (swap! app-state assoc-in [:play :current] (get p (dec qid)))
+            (let [p (get-in @app-state [:play :test])
+                  puzzle {:puzzle (get p (dec qid))}
+                  check {:check {:state nil :marked nil}}]
+              (swap! app-state assoc-in [:play :current] (merge puzzle check))
               (swap! app-state assoc :page :play)))
 
   (hook-browser-navigation!))
