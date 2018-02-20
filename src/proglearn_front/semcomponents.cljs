@@ -6,10 +6,10 @@
             [proglearn-front.editor :refer [editor]]
             [proglearn-front.cmarkdown :as mark]
             [proglearn-front.uicomp :as ui]
-            [proglearn-front.apicalls :as apis]
             [cljs.core.async :refer [<!]]
-            [proglearn-front.flow :as flow]
-            [proglearn-front.state :as st :refer [app-state]]))
+            [proglearn-front.state :as st :refer [app-state]]
+            [secretary.core :as secretary :refer-macros [defroute]]
+            [proglearn-front.util :refer [col row cr]]))
 
 (defn button
   ([props]
@@ -29,45 +29,6 @@
   (fs/ui-menu (clj->js (merge {:widths   (count items)
                                :children items}
                               props))))
-(defn cr
-  "Sugarcoat  for (fs/xx (clj->js {}))"
-  [f opts]
-  (f (clj->js opts)))
-
-(defn row
-  ([^:Reactcomp arg]
-   (fs/ui-grid-row #js {:children (if (list? arg) arg [arg])}))
-  ([^:Reactcomp arg props]
-   (fs/ui-grid-row (clj->js (merge
-                              {:children (if (list? arg) arg [arg])}
-                              props)))))
-
-(defn col
-  [^:Map props]
-  (fs/ui-grid-column (clj->js props)))
-
-;(defn codemirror
-;  []
-;  (col {:width    10
-;        :children [(row editor) (fs/ui-divider) (row runbutton)]}))
-
-(defn create-list-item
-  [qinfo props c]
-  (fs/ui-list-item (clj->js (merge {:icon    ic/pencil-icon
-                                    :content c}
-                                   props))))
-(defn left-col
-  ([]
-   (fs/ui-grid-column (clj->js {:width 10})))
-  ([args]
-   (fs/ui-grid-column (clj->js {:width    10
-                                :children (if (list? args) args [args])}))))
-(defn right-col
-  ([]
-   (fs/ui-grid-column (clj->js {:width 6})))
-  ([args]
-   (fs/ui-grid-column (clj->js {:width    6
-                                :children (if (list? args) args [args])}))))
 
 (defmulti challenge-comp (fn [x] (:type x)))
 
@@ -81,7 +42,13 @@
                                          :hidden  true})]})))
 
 (defmethod challenge-comp "code"
-  [])
+  [data]
+  (let [maincontent (ui/render-ui data)]
+    (col {:children [(fs/ui-segment
+                       (clj->js {:basic    true
+                                 :children [maincontent]}))
+                     (fs/ui-divider #js {:section true
+                                         :hidden  true})]})))
 
 (defn challenge-header
   [data]
@@ -89,8 +56,9 @@
                           :content   data
                           :textAlign "center"})))
 
-(defn continue-click
+(defn next-click
   [event opts]
+  (secretary/dispatch! "/skill/js/1/2")
   )
 
 (defn check-click
@@ -106,18 +74,18 @@
                       :size     "huge"
                       :floated  "right"
                       ;:disabled
-                      :onClick check-click}
+                      :onClick  check-click}
            :continue {:content  "Next"
                       :circular true
                       :color    "teal"
                       :size     "huge"
                       :floated  "right"
-                      :onClick continue-click}
-           :skip {:content  "Skip"
-                  :circular true
-                  :color    "blue"
-                  :size     "huge"
-                  :onClick skip-click}})
+                      :onClick  next-click}
+           :skip     {:content  "Skip"
+                      :circular true
+                      :color    "blue"
+                      :size     "huge"
+                      :onClick  skip-click}})
 
 (defn check-comp
   [^:Map data]
@@ -129,11 +97,9 @@
         (col {:width    3
               :children (ui/tickmark s)})
         (col {:width    3
-              :children (button (:check btns)
-                                check-click)})
+              :children (button (:check btns))})
         (col {:width    2
-              :children (button (:continue btns)
-                                continue-click)}))
+              :children (button (:continue btns))}))
       {:verticalAlign "middle"})))
 
 (defn mainapp

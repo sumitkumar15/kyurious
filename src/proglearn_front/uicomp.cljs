@@ -1,7 +1,8 @@
 (ns proglearn-front.uicomp
   (:require [reagent.core :as rgt]
             [fulcrologic.semantic-ui.factories :as fs]
-            [fulcrologic.semantic-ui.icons :as ic]))
+            [fulcrologic.semantic-ui.icons :as ic]
+            [proglearn-front.editor :refer [editor]]))
 
 ;; variable that holds the mcq quiz state
 (def init-state {:completed false
@@ -62,6 +63,24 @@
   (-> (map (fn [x] [x (fs/ui-divider #js {:hidden true})]) (map mcq content))
       flatten))
 
+(defn generate-editor
+  [^:Map data]
+  (fs/ui-item (clj->js {
+                        :children [(fs/ui-item-header
+                                     (clj->js {:content (:question data)}))
+                                   editor]
+                        })))
+
+(defn create-code-puzzle
+  [^:Map data]
+  (rgt/create-class
+    {:reagent-render generate-editor}))
+
+(defn code
+  [^:Map data]
+  (when (not-empty data)
+    (rgt/as-element [create-code-puzzle data])))
+
 (defmulti render-ui
           "Takes a task map & renders the ui component based on task type"
           (fn [x] (:type x)))
@@ -71,7 +90,8 @@
   (mcq content))
 
 (defmethod render-ui "code"
-  [content])
+  [content]
+  (code content))
 
 (defmethod render-ui "read"
   [content])

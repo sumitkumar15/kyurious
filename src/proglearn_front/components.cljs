@@ -24,10 +24,7 @@
 (defn parent-comp
   []
   [:div {:id "parent" :class "parent-top-level"}
-   [sc/nav-component]
-   [sc/b-check-component]
-   [ui/progress-bar-comp @app-state]
-   [sc/button (:continue sc/btns) sc/continue-click]])
+   [sc/nav-component]])
 
 (defn playground
   "main area of app where user answers the questions"
