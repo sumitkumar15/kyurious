@@ -2,7 +2,8 @@
   (:require [reagent.core :as rgt]
             [fulcrologic.semantic-ui.factories :as fs]
             [fulcrologic.semantic-ui.icons :as ic]
-            [proglearn-front.editor :refer [editor]]))
+            [proglearn-front.editor :refer [editor]]
+            [proglearn-front.util :refer [col row cr]]))
 
 ;; variable that holds the mcq quiz state
 (def init-state {:completed false
@@ -63,18 +64,14 @@
   (-> (map (fn [x] [x (fs/ui-divider #js {:hidden true})]) (map mcq content))
       flatten))
 
-(defn generate-editor
+(defn generate-header
   [^:Map data]
-  (fs/ui-item (clj->js {
-                        :children [(fs/ui-item-header
-                                     (clj->js {:content (:question data)}))
-                                   editor]
-                        })))
+  (cr fs/ui-header {:as "h2" :content (:question data)}))
 
 (defn create-code-puzzle
   [^:Map data]
   (rgt/create-class
-    {:reagent-render generate-editor}))
+    {:reagent-render generate-header}))
 
 (defn code
   [^:Map data]

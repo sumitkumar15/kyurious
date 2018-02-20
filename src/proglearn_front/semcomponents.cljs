@@ -43,10 +43,11 @@
 
 (defmethod challenge-comp "code"
   [data]
-  (let [maincontent (ui/render-ui data)]
+  (let [qcontent (ui/render-ui data)]
     (col {:children [(fs/ui-segment
                        (clj->js {:basic    true
-                                 :children [maincontent]}))
+                                 :children [qcontent
+                                            editor]}))
                      (fs/ui-divider #js {:section true
                                          :hidden  true})]})))
 
