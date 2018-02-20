@@ -97,6 +97,9 @@
   [event opts]
   )
 
+(defn skip-click
+  [event opts])
+
 (def btns {:check    {:content  "Check"
                       :circular true
                       :color    "teal"
@@ -109,7 +112,12 @@
                       :color    "teal"
                       :size     "huge"
                       :floated  "right"
-                      :onClick continue-click}})
+                      :onClick continue-click}
+           :skip {:content  "Skip"
+                  :circular true
+                  :color    "blue"
+                  :size     "huge"
+                  :onClick skip-click}})
 
 (defn check-comp
   [^:Map data]
@@ -117,11 +125,7 @@
     (row
       (list
         (col {:width    2
-              :children (button {:content  "Skip"
-                                 :circular true
-                                 :color    "blue"
-                                 :size     "huge"
-                                 })})
+              :children (button (:skip btns))})
         (col {:width    3
               :children (ui/tickmark s)})
         (col {:width    3
@@ -200,30 +204,3 @@
                                     (col {:width 4}))
                               {:color "teal"})]})))
 
-(defn skip-click
-  [event opts])
-
-(defn b-check-component
-  "The Navigation bar"
-  []
-  (fs/ui-grid (clj->js
-                {:centered true
-                 :padded   "vertically"
-                 :children [(row
-                              (list
-                                (col {:width    2
-                                      :children (button {:content  "Skip"
-                                                         :circular true
-                                                         :color    "blue"
-                                                         :size     "huge"
-                                                         })})
-                                (col {:width    3
-                                      :children (ui/tickmark @ui/att)})
-                                (col {:width    3
-                                      :children (button (:check btns)
-                                                        check-click)})
-                                (col {:width    2
-                                      :children (button (:continue btns)
-                                                        continue-click)}))
-                              {:color         "grey"
-                               :verticalAlign "middle"})]})))
