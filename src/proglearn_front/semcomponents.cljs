@@ -69,37 +69,87 @@
    (fs/ui-grid-column (clj->js {:width    6
                                 :children (if (list? args) args [args])}))))
 
-(defn challenge-comp
-  []
-  (let [{level :level title :title
-         desc  :desc content :content
-         id    :challengeId} (:lesson @app-state)
-        titlerow (row (fs/ui-header (clj->js {:as        "h2"
-                                              :content   title
-                                              :textAlign "center"})))
-        headrow (row (list (col {:width 4 :children [level]})
-                           (col {:width 4 :children [id]})))
-        descrow (row (col {:children [desc]}))
-        maincontent (ui/render-ui @flow/current-task)
-        tickicon (ui/tickmark @ui/att)]
+(defmulti challenge-comp (fn [x] (:type x)))
+
+(defmethod challenge-comp "mcq"
+  [data]
+  (let [maincontent (ui/render-ui data)]
     (col {:children [(fs/ui-segment
                        (clj->js {:basic    true
-                                 :children [titlerow
-                                            descrow
-                                            (fs/ui-divider)
-                                            maincontent
-                                            tickicon]}))
+                                 :children [maincontent]}))
                      (fs/ui-divider #js {:section true
                                          :hidden  true})]})))
 
-(defn grid
-  "The parameter only tells which function to render"
-  []
-  (fs/ui-grid #js {:container true
-                   :centered  true
-                   ;:padded    "vertically"
-                   :divided   true
-                   :children  [(left-col (list (challenge-comp)))]}))
+(defmethod challenge-comp "code"
+  [])
+
+(defn challenge-header
+  [data]
+  (fs/ui-header (clj->js {:as        "h2"
+                          :content   data
+                          :textAlign "center"})))
+
+(defn continue-click
+  [event opts]
+  )
+
+(defn check-click
+  [event opts]
+  )
+
+(def btns {:check    {:content  "Check"
+                      :circular true
+                      :color    "teal"
+                      :size     "huge"
+                      :floated  "right"
+                      ;:disabled
+                      :onClick check-click}
+           :continue {:content  "Next"
+                      :circular true
+                      :color    "teal"
+                      :size     "huge"
+                      :floated  "right"
+                      :onClick continue-click}})
+
+(defn check-comp
+  [^:Map data]
+  (let [{s :state m :marked} data]
+    (row
+      (list
+        (col {:width    2
+              :children (button {:content  "Skip"
+                                 :circular true
+                                 :color    "blue"
+                                 :size     "huge"
+                                 })})
+        (col {:width    3
+              :children (ui/tickmark s)})
+        (col {:width    3
+              :children (button (:check btns)
+                                check-click)})
+        (col {:width    2
+              :children (button (:continue btns)
+                                continue-click)}))
+      {:verticalAlign "middle"})))
+
+(defn mainapp
+  "Pass the complete question data"
+  [^:Map data]
+  (let [{head :heading chID :chID
+         test :test progress :progress
+         current :current} data]
+    (fs/ui-grid #js {:container true
+                     :centered  true
+                     :children  [(fs/ui-divider #js {:section true
+                                                     :hidden  true})
+                                 (row (challenge-header head))
+                                 (fs/ui-divider)
+                                 (row (col {:children (ui/progress-bar-comp (:percent progress))}))
+                                 (fs/ui-divider)
+                                 (row (challenge-comp (:puzzle current)))
+                                 (fs/ui-divider #js {:section true
+                                                     :hidden  true})
+                                 (check-comp (:check current))]})))
 
 (defn nav-menu
   []
@@ -139,18 +189,19 @@
                               (list (col {:width         4
                                           :textAlign     "center"
                                           :verticalAlign "middle"
-                                          :children      [(cr fs/ui-header {:as      "h2"
-                                                                            :content "Kyurious"})]})
+                                          :children      [(cr fs/ui-header
+                                                              {:as      "h2"
+                                                               :content "Kyurious"})]})
                                     (col {:width    4
                                           :children (nav-menu)})
                                     (col {:width    4
+                                          :verticalAlign "middle"
                                           :children (profile-menu "Sumit")})
                                     (col {:width 4}))
                               {:color "teal"})]})))
 
-(defn submit-click
-  [event opts]
-  (ui/indicate-incorrect))
+(defn skip-click
+  [event opts])
 
 (defn b-check-component
   "The Navigation bar"
@@ -160,17 +211,19 @@
                  :padded   "vertically"
                  :children [(row
                               (list
-                                (col {:width    5
+                                (col {:width    2
                                       :children (button {:content  "Skip"
                                                          :circular true
                                                          :color    "blue"
                                                          :size     "huge"
-                                                         :basic    true})})
-                                (col {:width    5
-                                      :children (button {:content  "Check"
-                                                         :circular true
-                                                         :color    "teal"
-                                                         :size     "huge"
-                                                         :floated  "right"}
-                                                        submit-click)}))
-                              {:color "teal"})]})))
+                                                         })})
+                                (col {:width    3
+                                      :children (ui/tickmark @ui/att)})
+                                (col {:width    3
+                                      :children (button (:check btns)
+                                                        check-click)})
+                                (col {:width    2
+                                      :children (button (:continue btns)
+                                                        continue-click)}))
+                              {:color         "grey"
+                               :verticalAlign "middle"})]})))
