@@ -70,3 +70,16 @@ Challenge expected response
                }
      }
 
+each question response
+;{:question "What is the output of following code?\n\nconsole.log(1000000000000000000000)"
+; :id       1
+; :type     "mcq"
+; :options  [{:label "Error Int too big"
+;             :value "A"}
+;            {:label "1000000000000000000000"
+;             :value "B"}
+;            {:label "1e+21"
+;             :value "C"}
+;            {:label "Missing"
+;             :value "D"}]
+; :answer   "C"}
