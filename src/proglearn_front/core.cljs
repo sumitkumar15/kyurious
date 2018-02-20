@@ -44,27 +44,35 @@
   []
   ;(secretary/set-config! :prefix "#")
   (defroute "/" []
-            (swap! app-state assoc :page :home))
-
-  (defroute "/challenge" []
             (go
               (let [response (<! (apis/testrequest))
                     r (:data response)]
-                (st/add-to-state [:lesson] r)
-                (st/add-to-state [:progress] {:percent 20})
-                ;(flow/reset-data)
-                (flow/load-next-task)
-                (swap! app-state assoc :page :challenge)))
-            )
-            (hook-browser-navigation!))
+                (st/add-to-state [:lesson] r)))
+            (swap! app-state assoc :page :home))
+
+  (defroute "/skill/:lang/:lesson" [lang lesson]
+            (let [{head :title content :content chID :challengeId} (@app-state :lesson)
+                  r {:heading  head
+                     :chID     chID
+                     :test     content
+                     :current nil
+                     :progress {:percent 0}}]
+              (st/add-to-state [:play] r)))
+
+  (defroute "/skill/:lang/:lesson/:qid" [lang lesson qid]
+            (let [p (get-in @app-state [:play :test])]
+              (swap! app-state assoc-in [:play :current] (get p (dec qid)))
+              (swap! app-state assoc :page :play)))
+
+  (hook-browser-navigation!))
 
 (defmulti current-page #(@app-state :page))
 
-(defmethod current-page :challenge []
-  [pc/parent-comp])
-
 (defmethod current-page :home []
   [:div "placeholder"])
+
+(defmethod current-page :play []
+  [pc/playground (@app-state :play)])
 
 (defn ^:export main []
   (app-routes)
