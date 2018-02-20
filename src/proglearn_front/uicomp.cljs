@@ -4,18 +4,24 @@
             [fulcrologic.semantic-ui.icons :as ic]))
 
 ;; variable that holds the mcq quiz state
-(def mcq-state (atom {}))
+(def init-state {:completed false
+                 :checkdisabled false})
+(def btn-state {:size "huge"})
 
+(def sol-state (rgt/atom init-state))
+(def att (rgt/atom btn-state))
+
+(declare enable-chk-btn)
 (defn label
   [content]
-  (fs/ui-label (clj->js {:content content
-                         :size "big"})))
+  (fs/ui-header (clj->js {:as "h3"
+                          :content content
+                          :size "large"})))
 
 (defn handle-radio-change
   [a]
-  (swap! mcq-state (fn [] (merge @mcq-state
-                                 {(.-name (.-target a))
-                                  (.-value (.-target a))}))))
+  (swap! sol-state merge {:sol (.-value (.-target a))})
+  (enable-chk-btn))
 
 (defn form-field-opts
   [^:Map data]
@@ -30,7 +36,8 @@
   (let [name (:id data) options (:options data)]
     (for [opt options]
       (fs/ui-form-field
-        (clj->js (merge {:name name}
+        (clj->js (merge {:name name
+                         :disabled (:completed @sol-state)}
                         (form-field-opts opt)))))))
 
 (defn generate-radio
@@ -68,3 +75,39 @@
 
 (defmethod render-ui "read"
   [content])
+
+(defn tick-class
+  [mark]
+  (rgt/create-class
+    {:reagent-render (fn [x]
+                       (let [props (cond
+                                     (false? x) {:name  ic/remove-circle-outline-icon
+                                                 :color "red"
+                                                 :size  "huge"}
+                                     (true? x) {:name  ic/check-circle-outline-icon
+                                                :color "green"
+                                                :size  "huge"}
+                                     :default {:size "huge"})]
+                         (fs/ui-icon
+                           (clj->js props))))}))
+
+(defn tickmark
+  [mark]
+  (rgt/as-element
+    [tick-class mark]))
+
+;(defn set-completed
+;  [a]
+;  (if a
+;    (swap! sol-state merge {:completed true})
+;    (swap! sol-state merge {:completed false})))
+
+(defn enable-chk-btn
+  []
+  (swap! sol-state merge {:checkdisabled false}))
+
+(defn progress-bar-comp
+  [percent]
+  (fs/ui-progress (clj->js {:percent percent
+                            :size    "tiny"
+                            :color   "blue"})))
