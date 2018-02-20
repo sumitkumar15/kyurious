@@ -3,7 +3,9 @@
             [proglearn-front.editor :refer [editor]]
             [fulcrologic.semantic-ui.factories :as f]
             [fulcrologic.semantic-ui.icons :as i]
-            [proglearn-front.semcomponents :as sc]))
+            [proglearn-front.semcomponents :as sc]
+            [proglearn-front.uicomp :as ui]
+            [proglearn-front.state :refer [app-state]]))
 
 (defn editor-comp
   []
@@ -12,25 +14,9 @@
    [:div {:class "editor" :id "editormain"}
     [@editor]]
    [:div {:class "editor-controls"}]])
-;
-;(defn result-comp
-;  []
-;  [:div {:class "result-view"}])
-;
-;(defn challenge-comp
-;  "Actual component composed of challenge-comp, editor, result-comp"
-;  []
-;  [:div {:class "challenge-view"}
-;   [question-comp]
-;   [editor-comp]
-;   [result-comp]])
 
 (defn top-comp []
   [:div {:id "top" :class "top-div"}])
-
-;(defn content-comp []
-;  [:div {:id "content" :class "content-div"}
-;   [challenge-comp]])
 
 (defn footer-comp []
   [:div {:id "footer" :class "footer"}])
@@ -39,7 +25,12 @@
   []
   [:div {:id "parent" :class "parent-top-level"}
    [sc/nav-component]
-   [sc/grid]
-   ;[content-comp]
-   [footer-comp]])
+   [sc/b-check-component]
+   [ui/progress-bar-comp @app-state]
+   [sc/button (:continue sc/btns) sc/continue-click]])
 
+(defn playground
+  "main area of app where user answers the questions"
+  [^:Map data]
+  [:div {:id "challenge"}
+   [sc/mainapp data]])
