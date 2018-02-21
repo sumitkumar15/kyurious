@@ -9,7 +9,8 @@
             [cljs.core.async :refer [<!]]
             [proglearn-front.state :as st :refer [app-state]]
             [secretary.core :as secretary :refer-macros [defroute]]
-            [proglearn-front.util :refer [col row cr]]))
+            [proglearn-front.util :refer [col row cr]]
+            [proglearn-front.flow :as flow]))
 
 (defn button
   ([props]
@@ -59,12 +60,14 @@
 
 (defn next-click
   [event opts]
-  (secretary/dispatch! "/skill/js/1/2")
-  )
+  (let [nxt (str "/skill/js/1/" (flow/get-curr-indx))]
+    (secretary/dispatch! nxt)))
 
 (defn check-click
   [event opts]
-  )
+  (let [a (flow/check-ans)]
+    (flow/mark-attempt-state a)
+    (flow/load-next-puz-in-state)))
 
 (defn skip-click
   [event opts])
@@ -106,8 +109,8 @@
 (defn mainapp
   "Pass the complete question data"
   [^:Map data]
-  (let [{head :heading chID :chID
-         test :test progress :progress
+  (let [{head    :heading chID :chID
+         test    :test progress :progress
          current :current} data]
     (fs/ui-grid #js {:container true
                      :centered  true
@@ -118,8 +121,6 @@
                                  (row (col {:children (ui/progress-bar-comp (:percent progress))}))
                                  (fs/ui-divider)
                                  (row (challenge-comp (:puzzle current)))
-                                 (fs/ui-divider #js {:section true
-                                                     :hidden  true})
                                  (check-comp (:check current))]})))
 
 (defn nav-menu
@@ -165,9 +166,8 @@
                                                                :content "Kyurious"})]})
                                     (col {:width    4
                                           :children (nav-menu)})
-                                    (col {:width    4
+                                    (col {:width         4
                                           :verticalAlign "middle"
-                                          :children (profile-menu "Sumit")})
+                                          :children      (profile-menu "Sumit")})
                                     (col {:width 4}))
                               {:color "teal"})]})))
-
