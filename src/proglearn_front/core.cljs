@@ -56,7 +56,9 @@
                      :chID     chID
                      :test     content
                      :current nil
-                     :progress {:percent 0}}]
+                     :progress {:percent 0}
+                     :currindx 1
+                     :solved-indx []}]
               (st/add-to-state [:play] r)))
 
   (defroute "/skill/:lang/:lesson/:qid" [lang lesson qid]
