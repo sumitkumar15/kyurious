@@ -3,7 +3,8 @@
             [fulcrologic.semantic-ui.factories :as fs]
             [fulcrologic.semantic-ui.icons :as ic]
             [proglearn-front.editor :refer [editor]]
-            [proglearn-front.util :refer [col row cr]]))
+            [proglearn-front.util :refer [col row cr]]
+            [proglearn-front.state :as st :refer [app-state]]))
 
 ;; variable that holds the mcq quiz state
 (def init-state {:completed false
@@ -22,8 +23,8 @@
 
 (defn handle-radio-change
   [a]
-  (swap! sol-state merge {:sol (.-value (.-target a))})
-  (enable-chk-btn))
+  (swap! app-state assoc-in [:play :current :check :marked]
+         (.-value (.-target a))))
 
 (defn form-field-opts
   [^:Map data]
@@ -38,8 +39,12 @@
   (let [name (:id data) options (:options data)]
     (for [opt options]
       (fs/ui-form-field
-        (clj->js (merge {:name name
-                         :disabled (:completed @sol-state)}
+        (clj->js (merge {:name     name
+                         :disabled (if (nil? (get-in
+                                                @app-state
+                                                [:play :current :check :state]))
+                                     false
+                                     true)}
                         (form-field-opts opt)))))))
 
 (defn generate-radio
@@ -121,7 +126,7 @@
 
 (defn enable-chk-btn
   []
-  (swap! sol-state merge {:checkdisabled false}))
+  )
 
 (defn progress-bar-comp
   [percent]
