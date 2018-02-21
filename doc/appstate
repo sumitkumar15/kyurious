@@ -1,0 +1,20 @@
+{
+    :page :home/:
+    :lesson {}
+    :play   {
+        :heading    ""
+        :chID       ""
+        :test       [ques-array]
+        :progress   {
+            :percent 10
+        }
+        :currindx 1/2/..
+        :current    {
+            :puzzle nil/puz from index
+            :check  {
+                :state  nil/true/false  //true answered correct, nil not attempted
+                :marked marked option A/B/C/D
+            }
+        }
+    }
+}
