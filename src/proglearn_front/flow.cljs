@@ -2,21 +2,22 @@
   (:require [reagent.core :as rgt]
             [proglearn-front.state :as st :refer [app-state]]))
 ;;Receives a lesson and directs the application flow
+(defn mark-attempt-state
+  [x]
+  (if x
+    (swap! app-state assoc-in [:play :current :check :state] true)
+    (swap! app-state assoc-in [:play :current :check :state] false)))
 
-(def current-task (rgt/atom {}))                            ;current task to render on screen
-
-(def task-no (rgt/atom -1))
-
-(defn get-task
-  "Get task of certain index from lesson"
-  [lesson index]
-  (let [cont (:content lesson)]
-    (get cont index)))
-
-(defn load-next-task
-  "Reads the current task index & loads next task on challenge completion"
+(defn load-next-puz-in-state
   []
-  (swap! task-no inc)
-  (swap! current-task (fn [] (get-task
-                               (get-in @app-state [:lesson])
-                               @task-no))))
+  (st/update-state [:play :currindx] inc))
+
+(defn get-curr-indx
+  []
+  (get-in @app-state [:play :currindx]))
+
+(defn check-ans
+  []
+  (let [m (get-in @app-state [:play :current :check :marked])
+        ans (get-in @app-state [:play :current :puzzle :answer])]
+    (= m ans)))
